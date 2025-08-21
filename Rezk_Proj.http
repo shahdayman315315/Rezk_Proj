@@ -1,0 +1,6 @@
+@Rezk_Proj_HostAddress = http://localhost:5232
+
+GET {{Rezk_Proj_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
