@@ -25,7 +25,9 @@ namespace Rezk_Proj
                             "http://localhost:5173"        
                         )
                         .AllowAnyHeader()
-                        .AllowAnyMethod();
+                        .AllowAnyMethod()
+                        .AllowCredentials()
+                        ;
                     });
             });
             // Add services to the container.
