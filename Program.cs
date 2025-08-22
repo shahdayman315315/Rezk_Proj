@@ -19,12 +19,15 @@ namespace Rezk_Proj
             // Add services to the container.
 
             builder.Services.AddControllers();
+            builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddSwaggerGen();
+           
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
             builder.Services.Configure<JWT>(builder.Configuration.GetSection("JWT"));
             builder.Services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>();
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("ProductionConnection")));
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddAuthentication(options =>
             {
@@ -54,10 +57,11 @@ namespace Rezk_Proj
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
-            {
+           
+                app.UseSwagger();
+                app.UseSwaggerUI();
                 app.MapOpenApi();
-            }
+            
 
             app.UseHttpsRedirection();
 
