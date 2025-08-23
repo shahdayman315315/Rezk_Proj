@@ -5,8 +5,23 @@ namespace Rezk_Proj.Models
     public enum WorkType
     {
         FullTime = 1,
-        PartTime,
-        Remote
+        PartTime = 2,
+        Remote = 3
+    }
+    public enum Categories
+    {
+        Supermarket = 1,
+        Education = 2,
+        Phrmacy = 3,
+        Restuarant = 4,
+        Management = 5,
+        ManualWork = 6,
+        ExternalWork = 7,
+        Security = 8,
+        Crafts = 9,
+        Transportation = 10,
+        HomeServices = 11,
+        Farming = 12
     }
     public class Job
     {
@@ -32,6 +47,9 @@ namespace Rezk_Proj.Models
 
         [Required]
         public WorkType workType { get; set; }
+
+        [Required]
+        public Categories Category { get; set; }
         public DateTime CreatedAt { get; set; }
         public List<Applications> Applications { get; set; }
 
