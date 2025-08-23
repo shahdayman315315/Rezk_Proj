@@ -21,12 +21,13 @@ namespace Rezk_Proj.Models
             modelbuilder.Entity<Applications>().Property(a => a.AppliedAt).HasDefaultValueSql("getdate()");
             modelbuilder.Entity<Employer>().HasOne(e => e.User).WithOne().HasForeignKey<Employer>(e => e.UserId);
             modelbuilder.Entity<Applicant>().HasOne(e => e.User).WithOne().HasForeignKey<Applicant>(e => e.UserId);
-
+            modelbuilder.Entity<Category>().HasMany(c=>c.Jobs).WithOne(j=>j.Category).HasForeignKey(j=>j.CategoryId);
 
         }
         public DbSet<Employer> Employers { get; set; }
         public DbSet<Applicant> Applicants { get; set; }
         public DbSet<Job> Jobs { get; set; }
         public DbSet<Applications> Applications { get; set; }
-    }
+        public DbSet<Category> Categories { get; set; }
+        }
 }

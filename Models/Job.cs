@@ -5,27 +5,15 @@ namespace Rezk_Proj.Models
     public enum WorkType
     {
         FullTime = 1,
-        PartTime = 2,
-        Remote = 3
+        PartTime ,
+        Remote 
     }
-    public enum Categories
-    {
-        Supermarket = 1,
-        Education = 2,
-        Phrmacy = 3,
-        Restuarant = 4,
-        Management = 5,
-        ManualWork = 6,
-        ExternalWork = 7,
-        Security = 8,
-        Crafts = 9,
-        Transportation = 10,
-        HomeServices = 11,
-        Farming = 12
-    }
+    
     public class Job
     {
         public int Id { get; set; }
+
+        [Required]
         public int EmployerId { get; set; }
         public Employer Employer { get; set; }
 
@@ -43,15 +31,19 @@ namespace Rezk_Proj.Models
 
         [Required]
         public decimal Longitude { get; set; }
-        public decimal Salary { get; set; }
+        public double Salary { get; set; }
 
         [Required]
         public WorkType workType { get; set; }
 
         [Required]
-        public Categories Category { get; set; }
         public DateTime CreatedAt { get; set; }
         public List<Applications> Applications { get; set; }
+
+        [Required]
+        public int CategoryId { get; set; }
+
+        public Category Category { get; set; }
 
     }
 }

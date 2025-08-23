@@ -247,12 +247,12 @@ namespace Rezk_Proj.Migrations
                     b.Property<string>("NationalId")
                         .IsRequired()
                         .HasMaxLength(14)
-                        .HasColumnType("nvarchar(14)");
+                        .HasColumnType("varchar(14)");
 
                     b.Property<string>("PhoneNumber")
                         .IsRequired()
                         .HasMaxLength(11)
-                        .HasColumnType("nvarchar(11)");
+                        .HasColumnType("varchar(11)");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -289,6 +289,23 @@ namespace Rezk_Proj.Migrations
                     b.ToTable("Applications");
                 });
 
+            modelBuilder.Entity("Rezk_Proj.Models.Category", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Categories");
+                });
+
             modelBuilder.Entity("Rezk_Proj.Models.Employer", b =>
                 {
                     b.Property<int>("Id")
@@ -316,12 +333,12 @@ namespace Rezk_Proj.Migrations
                     b.Property<string>("NationalId")
                         .IsRequired()
                         .HasMaxLength(14)
-                        .HasColumnType("nvarchar(14)");
+                        .HasColumnType("varchar(14)");
 
                     b.Property<string>("PhoneNumber")
                         .IsRequired()
                         .HasMaxLength(11)
-                        .HasColumnType("nvarchar(11)");
+                        .HasColumnType("varchar(11)");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -343,7 +360,7 @@ namespace Rezk_Proj.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("Category")
+                    b.Property<int>("CategoryId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedAt")
@@ -380,6 +397,8 @@ namespace Rezk_Proj.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
 
                     b.HasIndex("EmployerId");
 
@@ -480,11 +499,19 @@ namespace Rezk_Proj.Migrations
 
             modelBuilder.Entity("Rezk_Proj.Models.Job", b =>
                 {
+                    b.HasOne("Rezk_Proj.Models.Category", "Category")
+                        .WithMany("Jobs")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Rezk_Proj.Models.Employer", "Employer")
                         .WithMany("Jobs")
                         .HasForeignKey("EmployerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Category");
 
                     b.Navigation("Employer");
                 });
@@ -492,6 +519,11 @@ namespace Rezk_Proj.Migrations
             modelBuilder.Entity("Rezk_Proj.Models.Applicant", b =>
                 {
                     b.Navigation("Applications");
+                });
+
+            modelBuilder.Entity("Rezk_Proj.Models.Category", b =>
+                {
+                    b.Navigation("Jobs");
                 });
 
             modelBuilder.Entity("Rezk_Proj.Models.Employer", b =>

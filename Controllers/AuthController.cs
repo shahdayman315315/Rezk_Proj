@@ -29,7 +29,7 @@ namespace Rezk_Proj.Controllers
             return Ok(result);
         }
 
-        [HttpPost("Gettoken")]
+        [HttpPost("Login")]
         public async Task<IActionResult> GetToken([FromBody] TokenRequestModel model)
         {
             if (!ModelState.IsValid)
