@@ -3,8 +3,8 @@
     public enum Status
     {
         Pending = 1,
-        Accepted,
-        Rejected
+        Accepted ,
+        Rejected 
     }
     public class Applications
     {

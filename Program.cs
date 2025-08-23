@@ -15,7 +15,21 @@ namespace Rezk_Proj
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-
+            //Add cors
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowFrontend",
+                    policy =>
+                    {
+                        policy.WithOrigins(
+                            "http://localhost:5173"        
+                        )
+                        .AllowAnyHeader()
+                        .AllowAnyMethod()
+                        .AllowCredentials()
+                        ;
+                    });
+            });
             // Add services to the container.
 
             builder.Services.AddControllers();
@@ -70,6 +84,7 @@ namespace Rezk_Proj
 
             app.UseAuthorization();
 
+            app.UseCors("AllowFrontend");
 
             app.MapControllers();
 
