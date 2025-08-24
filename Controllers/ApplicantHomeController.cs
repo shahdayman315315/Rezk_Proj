@@ -8,12 +8,32 @@ namespace Rezk_Proj.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class JobsController : ControllerBase
+    public class ApplicantHomeController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
-        public JobsController(ApplicationDbContext context)
+        public ApplicantHomeController(ApplicationDbContext context)
         {
             _context = context;
+        }
+        
+        [HttpGet("Categories")]
+        public async Task<IActionResult> GetCategories()
+        {
+            var categories = await _context.Categories.ToArrayAsync();
+            return Ok(categories);
+        }
+
+        [HttpGet("CategoryJobs")]
+        public async Task<IActionResult> GetCategoryJobs([FromRoute] int id)
+        {
+            var category = await _context.Categories
+                           .Include(c => c.Jobs)
+                           .FirstOrDefaultAsync(c => c.Id == id);
+
+            if (category is null)
+                return NotFound(new { message = "There is no Category with this ID" });
+
+            return Ok(category.Jobs);
         }
 
         [HttpGet("NearbyJobs")]
@@ -25,8 +45,8 @@ namespace Rezk_Proj.Controllers
             var nearbyjobs = await _context.Jobs
                 .Where(j => GeoHelper.CalculateDistance(applicantLatitude, applicantLongitude, j.Latitude, j.Longitude) <= 10)
                 .ToListAsync();
-          
-            if(!nearbyjobs.Any())
+
+            if (!nearbyjobs.Any())
                 return NotFound("No nearby jobs found within 10 km radius.");
 
             return Ok(nearbyjobs);
