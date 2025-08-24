@@ -75,7 +75,8 @@ namespace Rezk_Proj
              app.UseSwagger();
              app.UseSwaggerUI();
              app.MapOpenApi();
-            
+
+            app.UseStaticFiles();
 
             app.UseHttpsRedirection();
 

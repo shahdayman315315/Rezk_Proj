@@ -20,8 +20,16 @@ namespace Rezk_Proj.Controllers
         public async Task<IActionResult> GetCategories()
         {
             var categories = await _context.Categories.ToArrayAsync();
-            return Ok(categories);
+            var result = categories.Select(c => new
+            {
+                c.Id,
+                c.Name,
+                ImageUrl = $"{Request.Scheme}://{Request.Host}/images/categories/{c.ImageURL}"
+
+            });
+            return Ok(result);
         }
+
 
         [HttpGet("CategoryJobs")]
         public async Task<IActionResult> GetCategoryJobs([FromRoute] int id)
