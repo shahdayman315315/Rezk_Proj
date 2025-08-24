@@ -14,25 +14,25 @@ namespace Rezk_Proj.Controllers
         {
             _context = context;
         }
-
+        
         [HttpGet]
-        public IActionResult GetCategories()
+        public async Task<IActionResult> GetCategories()
         {
-            var categories = _context.Categories.ToList();
+            var categories = await _context.Categories.ToArrayAsync();
             return Ok(categories);
         }
 
         [HttpGet("{id}")]
-        public IActionResult GetCategoryJobs(int id)
+        public async Task<IActionResult> GetCategoryJobs(int id)
         {
-            var category = _context.Categories.Find(id) ;
-            if (category is null)
-            {
-                return NotFound("There is no Category with this ID");
-            }
-            var jobsInCategory = _context.Jobs.Where(j => j.CategoryId == id).ToList(); 
+            var category = await _context.Categories
+                           .Include(c => c.Jobs)
+                           .FirstOrDefaultAsync(c => c.Id == id);
 
-            return Ok(jobsInCategory);
+            if (category is null)
+                return NotFound(new { message = "There is no Category with this ID" });
+
+            return Ok(category.Jobs);
         }
     }
 }

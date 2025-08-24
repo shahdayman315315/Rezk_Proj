@@ -72,9 +72,9 @@ namespace Rezk_Proj
 
             // Configure the HTTP request pipeline.
            
-                app.UseSwagger();
-                app.UseSwaggerUI();
-                app.MapOpenApi();
+             app.UseSwagger();
+             app.UseSwaggerUI();
+             app.MapOpenApi();
             
 
             app.UseHttpsRedirection();

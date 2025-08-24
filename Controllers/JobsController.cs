@@ -22,8 +22,9 @@ namespace Rezk_Proj.Controllers
             if (applicantLatitude == 0 || applicantLongitude == 0)
                 return BadRequest("Latitude and Longitude are required");
 
-            var nearbyjobs=await _context.Jobs
-             .Where(j=>GeoHelper.CalculateDistance(applicantLatitude, applicantLongitude, j.Latitude, j.Longitude)<=10).ToListAsync();
+            var nearbyjobs = await _context.Jobs
+                .Where(j => GeoHelper.CalculateDistance(applicantLatitude, applicantLongitude, j.Latitude, j.Longitude) <= 10)
+                .ToListAsync();
           
             if(!nearbyjobs.Any())
                 return NotFound("No nearby jobs found within 10 km radius.");
