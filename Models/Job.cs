@@ -5,8 +5,8 @@ namespace Rezk_Proj.Models
     public enum WorkType
     {
         FullTime = 1,
-        PartTime,
-        Remote
+        PartTime = 2,
+        Remote = 3
     }
 
     public class Job
@@ -33,7 +33,11 @@ namespace Rezk_Proj.Models
         public decimal Longitude { get; set; }
 
         [Range(0, double.MaxValue)]
-        public double Salary { get; set; }
+        public double MinSalary { get; set; }
+
+        [Range(0, double.MaxValue)]
+        public double MaxSalary { get; set; }
+
 
         [Required]
         public WorkType WorkType { get; set; }

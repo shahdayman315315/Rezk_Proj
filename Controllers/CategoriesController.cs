@@ -26,7 +26,6 @@ namespace Rezk_Proj.Controllers
         public async Task<IActionResult> GetCategoryJobs(int id)
         {
             var category = await _context.Categories
-                           .Include(c => c.Jobs)
                            .FirstOrDefaultAsync(c => c.Id == id);
 
             if (category is null)
