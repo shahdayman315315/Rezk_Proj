@@ -46,6 +46,8 @@ namespace Rezk_Proj.Models
 
         [Required]
         public int CategoryId { get; set; }
+
+        [Required]
         public Category Category { get; set; }
 
         public List<Applications> Applications { get; set; } = new();
