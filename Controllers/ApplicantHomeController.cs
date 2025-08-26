@@ -60,5 +60,30 @@ namespace Rezk_Proj.Controllers
             return Ok(nearbyjobs);
 
         }
+
+        [HttpPost("ApplyToJob/{jobId}")]
+        public async Task<IActionResult> ApplyToJob([FromRoute] int jobId)
+        {
+            var applicant = await _context.Applicants.FirstOrDefaultAsync(a => a.UserId == User.FindFirst("uid").Value);
+            var job= await _context.Jobs.FindAsync(jobId);
+            if(job is null)
+                return NotFound(new { message = "There is no Job with this ID" });
+
+            var existingApplication = await _context.Applications
+                .FirstOrDefaultAsync(a => a.JobId == jobId && a.ApplicantId == applicant.Id);
+
+            if (existingApplication is not null)
+                return BadRequest(new { message = "You have already applied to this job" });
+
+            await _context.Applications.AddAsync(new Applications
+            {
+                Job = job,
+                Applicant = applicant,
+                Status = Status.Pending
+            });
+
+            await _context.SaveChangesAsync();
+            return Ok(new { message = "Application submitted successfully" });
+        }
     }
 }
