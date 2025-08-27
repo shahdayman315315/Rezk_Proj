@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Rezk_Proj.Helpers;
 using Rezk_Proj.Models;
+using Rezk_Proj.Services;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace Rezk_Proj.Controllers
 {
@@ -11,9 +13,11 @@ namespace Rezk_Proj.Controllers
     public class ApplicantHomeController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
-        public ApplicantHomeController(ApplicationDbContext context)
+        private readonly IEmailService _emailService;
+        public ApplicantHomeController(ApplicationDbContext context, IEmailService emailService)
         {
             _context = context;
+            _emailService = emailService;
         }
         
         [HttpGet("Categories")]
@@ -65,8 +69,8 @@ namespace Rezk_Proj.Controllers
         public async Task<IActionResult> ApplyToJob([FromRoute] int jobId)
         {
             var applicant = await _context.Applicants.FirstOrDefaultAsync(a => a.UserId == User.FindFirst("uid").Value);
-            var job= await _context.Jobs.FindAsync(jobId);
-            if(job is null)
+            var job= await _context.Jobs.Include(j=>j.Employer).ThenInclude(e=>e.User).FirstOrDefaultAsync(j => j.Id == jobId);
+            if (job is null)
                 return NotFound(new { message = "There is no Job with this ID" });
 
             var existingApplication = await _context.Applications
@@ -83,7 +87,22 @@ namespace Rezk_Proj.Controllers
             });
 
             await _context.SaveChangesAsync();
-            return Ok(new { message = "Application submitted successfully" });
+            string employerEmail = job.Employer.User.Email; 
+            string subject = $"New Application for {job.Title}";
+            string body = $@"
+        <h2>Hello {job.Employer.Name},</h2>
+        <p>A new applicant has applied for your job <b>{job.Title}</b>.</p>
+        <p><b>Applicant Name:</b> {applicant.Name}</p>
+        <p><b>Applicant Email:</b> {User.FindFirst(JwtRegisteredClaimNames.Email)?.Value}</p>
+        <p>Status: Pending</p>
+        <br/>
+        <p>Regards,<br/>Your Job Portal</p>
+           ";
+
+            await _emailService.SendEmailAsync(employerEmail, subject, body);
+
+            return Ok(new { message = "Application submitted successfully and notification email sent." });
+        
         }
     }
 }

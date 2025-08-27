@@ -2,19 +2,27 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Rezk_Proj.Models;
+using Rezk_Proj.Services;
 
 namespace Rezk_Proj.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class EmployerHomeController(ApplicationDbContext context) : ControllerBase
+    public class EmployerHomeController : ControllerBase
     {
+        private readonly ApplicationDbContext _context;
+        private readonly IEmailService _emailService;
+        public EmployerHomeController(ApplicationDbContext context, IEmailService emailService)
+        {
+            _context = context;
+            _emailService = emailService;
+        }
         [HttpGet("Dashboard")]
         public async Task<IActionResult> GetEmployerDashboard()
         {
 
-            var employer = await context.Employers.FirstOrDefaultAsync(e => e.UserId == User.FindFirst("uid").Value);
-            var jobs=await context.Jobs
+            var employer = await _context.Employers.FirstOrDefaultAsync(e => e.UserId == User.FindFirst("uid").Value);
+            var jobs=await _context.Jobs
                 .Where(j => j.EmployerId == employer.Id)
                 .Include(j => j.Applications)
                 .ThenInclude(a => a.Applicant)
@@ -54,11 +62,11 @@ namespace Rezk_Proj.Controllers
            if(!ModelState.IsValid) 
                 return BadRequest(ModelState);
 
-           var employer=await context.Employers.FirstOrDefaultAsync(e=>e.UserId==User.FindFirst("uid").Value);
+           var employer=await _context.Employers.FirstOrDefaultAsync(e=>e.UserId==User.FindFirst("uid").Value);
 
             job.EmployerId = employer.Id;
-            await context.Jobs.AddAsync(job);
-            await context.SaveChangesAsync();
+            await _context.Jobs.AddAsync(job);
+            await _context.SaveChangesAsync();
             return Ok(job);
         }
 
@@ -70,8 +78,8 @@ namespace Rezk_Proj.Controllers
             if(id!=updatedJob.Id)
                 return BadRequest("Job ID mismatch");
 
-            var employer = await context.Employers.FirstOrDefaultAsync(e => e.UserId == User.FindFirst("uid").Value);
-            var existingJob = await context.Jobs.FirstOrDefaultAsync(j => j.Id == id && j.EmployerId == employer.Id);
+            var employer = await _context.Employers.FirstOrDefaultAsync(e => e.UserId == User.FindFirst("uid").Value);
+            var existingJob = await _context.Jobs.FirstOrDefaultAsync(j => j.Id == id && j.EmployerId == employer.Id);
 
             if (existingJob is null)
                 return NotFound(new { message = "There is no Job with this ID for this Employer" });
@@ -87,7 +95,7 @@ namespace Rezk_Proj.Controllers
             existingJob.WorkType = updatedJob.WorkType;
             existingJob.CategoryId = updatedJob.CategoryId;
 
-            await context.SaveChangesAsync();
+            await _context.SaveChangesAsync();
 
             return Ok(updatedJob);
         }
@@ -95,32 +103,45 @@ namespace Rezk_Proj.Controllers
         [HttpDelete("DeleteJob/{id}")]
         public async Task<IActionResult> DeleteJob([FromRoute] int id)
         {
-            var employer = await context.Employers.FirstOrDefaultAsync(e => e.UserId == User.FindFirst("uid").Value);
-          var job=await context.Jobs.FirstOrDefaultAsync(j => j.Id == id && j.EmployerId == employer.Id);
+            var employer = await _context.Employers.FirstOrDefaultAsync(e => e.UserId == User.FindFirst("uid").Value);
+          var job=await _context.Jobs.FirstOrDefaultAsync(j => j.Id == id && j.EmployerId == employer.Id);
 
             if (job is null)
                 return NotFound(new { message = "There is no Job with this ID for this Employer" });
 
-             context.Jobs.Remove(job);
-            await context.SaveChangesAsync();
+            _context.Jobs.Remove(job);
+            await _context.SaveChangesAsync();
             return Ok(new { message = "Job deleted successfully" });
         }
 
         [HttpPut("UpdateApplicationStatus/{jobId}/{applicantId}")]
         public async Task<IActionResult> UpdateApplicationStatus([FromRoute] int jobId, [FromRoute] int applicantId, [FromBody] Status newStatus)
         {
-            var employer = await context.Employers.FirstOrDefaultAsync(e => e.UserId == User.FindFirst("uid").Value);
-            var job = await context.Jobs.FirstOrDefaultAsync(j => j.Id == jobId && j.EmployerId == employer.Id);
+            var employer = await _context.Employers.FirstOrDefaultAsync(e => e.UserId == User.FindFirst("uid").Value);
+            var job = await _context.Jobs.FirstOrDefaultAsync(j => j.Id == jobId && j.EmployerId == employer.Id);
             if (job is null)
                 return NotFound(new { message = "There is no Job with this ID for this Employer" });
 
-            var application = await context.Applications.FirstOrDefaultAsync(a => a.JobId == jobId && a.ApplicantId == applicantId);
+            var application = await _context.Applications.Include(a=>a.Applicant).ThenInclude(ap=>ap.User).FirstOrDefaultAsync(a => a.JobId == jobId && a.ApplicantId == applicantId);
             if (application is null)
                 return NotFound(new { message = "There is no Application with this Job ID and Applicant ID" });
 
             application.Status = newStatus;
-            await context.SaveChangesAsync();
-            return Ok(new { message = "Application status updated successfully" });
+            await _context.SaveChangesAsync();
+
+            string applicantEmail = application.Applicant.User.Email;
+            string subject = $"Your application status for {job.Title} has been updated";
+            string body = $@"
+        <h2>Hello {application.Applicant.Name},</h2>
+        <p>Your application for the job <b>{job.Title}</b> has been {newStatus}.</p>
+        <br/>
+        <p>Regards,<br/>Your Job Portal</p>
+            ";
+
+            await _emailService.SendEmailAsync(applicantEmail, subject, body);
+
+            return Ok(new { message = "Application status updated successfully and notification email sent" });
         }
     }
+    
 }
