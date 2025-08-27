@@ -105,5 +105,22 @@ namespace Rezk_Proj.Controllers
             await context.SaveChangesAsync();
             return Ok(new { message = "Job deleted successfully" });
         }
+
+        [HttpPut("UpdateApplicationStatus/{jobId}/{applicantId}")]
+        public async Task<IActionResult> UpdateApplicationStatus([FromRoute] int jobId, [FromRoute] int applicantId, [FromBody] Status newStatus)
+        {
+            var employer = await context.Employers.FirstOrDefaultAsync(e => e.UserId == User.FindFirst("uid").Value);
+            var job = await context.Jobs.FirstOrDefaultAsync(j => j.Id == jobId && j.EmployerId == employer.Id);
+            if (job is null)
+                return NotFound(new { message = "There is no Job with this ID for this Employer" });
+
+            var application = await context.Applications.FirstOrDefaultAsync(a => a.JobId == jobId && a.ApplicantId == applicantId);
+            if (application is null)
+                return NotFound(new { message = "There is no Application with this Job ID and Applicant ID" });
+
+            application.Status = newStatus;
+            await context.SaveChangesAsync();
+            return Ok(new { message = "Application status updated successfully" });
+        }
     }
 }
