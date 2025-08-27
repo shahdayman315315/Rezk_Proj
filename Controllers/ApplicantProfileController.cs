@@ -10,7 +10,6 @@ namespace Rezk_Proj.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
     public class ApplicantProfileController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
@@ -44,7 +43,7 @@ namespace Rezk_Proj.Controllers
                     a.Name,
                     a.PhoneNumber,
                     a.LocationString,
-                    OwnerUserId = a.UserId // helpful for debugging ownership issues
+                    OwnerUserId = a.UserId 
                 })
                 .ToListAsync();
 
@@ -52,15 +51,29 @@ namespace Rezk_Proj.Controllers
         }
 
         // GET: api/ApplicantProfile/5
-        [HttpGet("GetApplicantById")]
+        [HttpGet("GetApplicantById/{id}")]
         public async Task<IActionResult> GetApplicantById([FromRoute] int id)
         {
+            _logger.LogInformation("GetApplicantById: request received for id={Id}", id);
+
+            if (id <= 0)
+            {
+                _logger.LogWarning("GetApplicantById: invalid id={Id}", id);
+                return BadRequest(new { message = "Invalid applicant id" });
+            }
+
             var applicant = await _context.Applicants
                 .AsNoTracking()
                 .FirstOrDefaultAsync(a => a.Id == id);
 
             if (applicant == null)
+            {
+                _logger.LogWarning("GetApplicantById: applicant not found id={Id}", id);
                 return NotFound(new { message = "Applicant not found" });
+            }
+
+            _logger.LogInformation("GetApplicantById: applicant found id={Id}, userId={UserId}",
+                applicant.Id, applicant.UserId);
 
             return Ok(new
             {
@@ -71,49 +84,20 @@ namespace Rezk_Proj.Controllers
                 applicant.LocationString,
                 applicant.Latitude,
                 applicant.Longitude,
-                OwnerUserId = applicant.UserId // return owner id for easier debugging on client side
+                OwnerUserId = applicant.UserId
             });
         }
 
-        // PUT: api/ApplicantProfile/5
-        [HttpPut("UpdateApplicant")]
-        public async Task<IActionResult> UpdateApplicant([FromRoute] int id, [FromBody] Applicant dto)
-        {
-            if (!ModelState.IsValid)
-            {
-                _logger.LogWarning("UpdateApplicant: invalid model state for id={Id}", id);
-                return BadRequest(ModelState);
-            }
+        public record ApplicantUpdateDto(string NationalId, string Name, string PhoneNumber, string LocationString, decimal Latitude, decimal Longitude);
 
+        [HttpPut("{id:int}")]
+        public async Task<IActionResult> UpdateApplicant(int id, [FromBody] ApplicantUpdateDto dto)
+        {
             var existingApplicant = await _context.Applicants.FindAsync(id);
             if (existingApplicant == null)
-            {
-                _logger.LogInformation("UpdateApplicant: applicant not found id={Id}", id);
                 return NotFound(new { message = "Applicant not found" });
-            }
 
-            if (!User.Identity.IsAuthenticated)
-            {
-                _logger.LogWarning("UpdateApplicant: unauthenticated attempt for id={Id}", id);
-                return Unauthorized(new { message = "You must be authenticated to update an applicant." });
-            }
-
-            // try to get user id from claims or UserManager fallback
-            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(currentUserId) && _userManager != null)
-            {
-                currentUserId = _userManager.GetUserId(User);
-            }
-
-            var isAdmin = User.IsInRole("Admin") || User.Claims.Any(c => c.Type == ClaimTypes.Role && c.Value == "Admin");
-
-            if (existingApplicant.UserId != currentUserId && !isAdmin)
-            {
-                _logger.LogWarning("UpdateApplicant: forbidden user={UserId} tries to update applicant={ApplicantUserId}", currentUserId, existingApplicant.UserId);
-                return Forbid();
-            }
-
-            // apply updates
+            // update fields
             existingApplicant.NationalId = dto.NationalId;
             existingApplicant.Name = dto.Name;
             existingApplicant.PhoneNumber = dto.PhoneNumber;
@@ -121,54 +105,41 @@ namespace Rezk_Proj.Controllers
             existingApplicant.Latitude = dto.Latitude;
             existingApplicant.Longitude = dto.Longitude;
 
-            try
-            {
-                await _context.SaveChangesAsync();
-                _logger.LogInformation("UpdateApplicant: applicant {Id} updated by user {UserId}", id, currentUserId);
-                return NoContent();
-            }
-            catch (DbUpdateException ex)
-            {
-                _logger.LogError(ex, "UpdateApplicant: DB update error for applicant {Id}", id);
-                return StatusCode(500, new { message = "An error occurred while updating the applicant", error = ex.Message });
-            }
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Applicant updated successfully" });
         }
 
-        // DELETE: api/ApplicantProfile/5
-        [HttpDelete("DeleteApplicant")]
-        public async Task<IActionResult> DealeteApplicant([FromRoute] int id)
+
+        // DELETE: api/ApplicantProfile/DeleteApplicant/{id}
+        [HttpDelete("DeleteApplicant/{id}")]
+        public async Task<IActionResult> DeleteApplicant([FromRoute] int id)
         {
-            var applicant = await _context.Applicants.FindAsync(id);
+            var applicant = await _context.Applicants
+                .FirstOrDefaultAsync(a => a.Id == id);
+
             if (applicant == null)
             {
-                _logger.LogInformation("DeleteApplicant: not found id={Id}", id);
                 return NotFound(new { message = "Applicant not found" });
             }
 
-            if (!User.Identity.IsAuthenticated)
+            try
             {
-                _logger.LogWarning("DeleteApplicant: unauthenticated attempt id={Id}", id);
-                return Unauthorized(new { message = "You must be authenticated to delete an applicant." });
+                _context.Applicants.Remove(applicant);
+                await _context.SaveChangesAsync();
+                return Ok(new { message = "Applicant and related applications deleted successfully" });
             }
-
-            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(currentUserId) && _userManager != null)
+            catch (DbUpdateException ex)
             {
-                currentUserId = _userManager.GetUserId(User);
+                return StatusCode(500, new
+                {
+                    message = "Delete failed due to database constraint",
+                    details = ex.InnerException?.Message
+                });
             }
-
-            var isAdmin = User.IsInRole("Admin") || User.Claims.Any(c => c.Type == ClaimTypes.Role && c.Value == "Admin");
-            if (applicant.UserId != currentUserId && !isAdmin)
-            {
-                _logger.LogWarning("DeleteApplicant: forbidden user={UserId} tries to delete owner={OwnerId}", currentUserId, applicant.UserId);
-                return Forbid();
-            }
-
-            _context.Applicants.Remove(applicant);
-            await _context.SaveChangesAsync();
-            _logger.LogInformation("DeleteApplicant: applicant {Id} deleted by user {UserId}", id, currentUserId);
-            return Ok(new { message = "Applicant deleted successfully" });
         }
+
+
 
         // POST: api/ApplicantProfile/signout
         [HttpPost("SignOutApplicant")]

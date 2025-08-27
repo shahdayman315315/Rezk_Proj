@@ -229,6 +229,7 @@ namespace Rezk_Proj.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<decimal>("Latitude")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("LocationString")
@@ -237,6 +238,7 @@ namespace Rezk_Proj.Migrations
                         .HasColumnType("nvarchar(255)");
 
                     b.Property<decimal>("Longitude")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Name")
@@ -263,7 +265,7 @@ namespace Rezk_Proj.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("Applicants", (string)null);
+                    b.ToTable("Applicants");
                 });
 
             modelBuilder.Entity("Rezk_Proj.Models.Applications", b =>
@@ -286,7 +288,7 @@ namespace Rezk_Proj.Migrations
 
                     b.HasIndex("ApplicantId");
 
-                    b.ToTable("Applications", (string)null);
+                    b.ToTable("Applications");
                 });
 
             modelBuilder.Entity("Rezk_Proj.Models.Category", b =>
@@ -307,7 +309,7 @@ namespace Rezk_Proj.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Categories", (string)null);
+                    b.ToTable("Categories");
                 });
 
             modelBuilder.Entity("Rezk_Proj.Models.Employer", b =>
@@ -319,6 +321,7 @@ namespace Rezk_Proj.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<decimal>("Latitude")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("LocationString")
@@ -327,6 +330,7 @@ namespace Rezk_Proj.Migrations
                         .HasColumnType("nvarchar(255)");
 
                     b.Property<decimal>("Longitude")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Name")
@@ -353,7 +357,7 @@ namespace Rezk_Proj.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("Employers", (string)null);
+                    b.ToTable("Employers");
                 });
 
             modelBuilder.Entity("Rezk_Proj.Models.Job", b =>
@@ -381,6 +385,7 @@ namespace Rezk_Proj.Migrations
                         .HasColumnType("int");
 
                     b.Property<decimal>("Latitude")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("LocationString")
@@ -389,13 +394,14 @@ namespace Rezk_Proj.Migrations
                         .HasColumnType("nvarchar(255)");
 
                     b.Property<decimal>("Longitude")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<double>("MaxSalary")
-                        .HasColumnType("float");
+                    b.Property<float>("MaxSalary")
+                        .HasColumnType("real");
 
-                    b.Property<double>("MinSalary")
-                        .HasColumnType("float");
+                    b.Property<float>("MinSalary")
+                        .HasColumnType("real");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -411,7 +417,7 @@ namespace Rezk_Proj.Migrations
 
                     b.HasIndex("EmployerId");
 
-                    b.ToTable("Jobs", (string)null);
+                    b.ToTable("Jobs");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -481,13 +487,13 @@ namespace Rezk_Proj.Migrations
                     b.HasOne("Rezk_Proj.Models.Applicant", "Applicant")
                         .WithMany("Applications")
                         .HasForeignKey("ApplicantId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Rezk_Proj.Models.Job", "Job")
                         .WithMany("Applications")
                         .HasForeignKey("JobId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Applicant");

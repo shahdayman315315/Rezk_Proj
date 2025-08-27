@@ -32,11 +32,11 @@ namespace Rezk_Proj.Models
         [Required]
         public decimal Longitude { get; set; }
 
-        [Range(0, double.MaxValue)]
-        public double MinSalary { get; set; }
+        [Range(0, float.MaxValue)]
+        public float MinSalary { get; set; }
 
-        [Range(0, double.MaxValue)]
-        public double MaxSalary { get; set; }
+        [Range(0, float.MaxValue)]
+        public float MaxSalary { get; set; }
 
 
         [Required]
