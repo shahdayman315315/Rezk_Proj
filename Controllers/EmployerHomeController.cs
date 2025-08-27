@@ -14,12 +14,12 @@ namespace Rezk_Proj.Controllers
         {
 
             var employer = await context.Employers.FirstOrDefaultAsync(e => e.UserId == User.FindFirst("uid").Value);
-            var jobs=await context.Jobs
+            var jobs = await context.Jobs
                 .Where(j => j.EmployerId == employer.Id)
                 .Include(j => j.Applications)
                 .ThenInclude(a => a.Applicant)
                 .ToListAsync();
-            var result = jobs.Select(j =>new
+            var result = jobs.Select(j => new
             {
                 j.Id,
                 j.Title,

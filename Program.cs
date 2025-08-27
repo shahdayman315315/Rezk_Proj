@@ -63,11 +63,8 @@ namespace Rezk_Proj
                     IssuerSigningKey=new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(jwt.Key)),
 
                 };
-            }
-           
-                )
-            
-            ;
+            });
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
