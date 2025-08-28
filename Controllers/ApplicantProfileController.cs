@@ -10,6 +10,7 @@ namespace Rezk_Proj.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class ApplicantProfileController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
@@ -29,46 +30,37 @@ namespace Rezk_Proj.Controllers
             _logger = logger;
         }
 
-        // GET: api/ApplicantProfile
-        [HttpGet("GetAllApplicants")]
-        [AllowAnonymous]
-        public async Task<IActionResult> GetAllApplicants()
-        {
-            var applicants = await _context.Applicants
-                .AsNoTracking()
-                .Select(a => new
-                {
-                    a.Id,
-                    a.NationalId,
-                    a.Name,
-                    a.PhoneNumber,
-                    a.LocationString,
-                    OwnerUserId = a.UserId 
-                })
-                .ToListAsync();
+        //// GET: api/ApplicantProfile
+        //[HttpGet("GetAllApplicants")]
+        //[AllowAnonymous]
+        //public async Task<IActionResult> GetAllApplicants()
+        //{
+        //    var applicants = await _context.Applicants
+        //        .AsNoTracking()
+        //        .Select(a => new
+        //        {
+        //            a.Id,
+        //            a.NationalId,
+        //            a.Name,
+        //            a.PhoneNumber,
+        //            a.LocationString,
+        //            OwnerUserId = a.UserId 
+        //        })
+        //        .ToListAsync();
 
-            return Ok(applicants);
-        }
+        //    return Ok(applicants);
+        //}
 
         // GET: api/ApplicantProfile/5
-        [HttpGet("GetApplicantById/{id}")]
-        public async Task<IActionResult> GetApplicantById([FromRoute] int id)
+        [HttpGet("GetApplicantProfile")]
+        public async Task<IActionResult> GetApplicantById()
         {
-            _logger.LogInformation("GetApplicantById: request received for id={Id}", id);
 
-            if (id <= 0)
-            {
-                _logger.LogWarning("GetApplicantById: invalid id={Id}", id);
-                return BadRequest(new { message = "Invalid applicant id" });
-            }
-
-            var applicant = await _context.Applicants
-                .AsNoTracking()
-                .FirstOrDefaultAsync(a => a.Id == id);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var applicant = await _context.Applicants.AsNoTracking().FirstOrDefaultAsync(u => u.UserId == userId);
 
             if (applicant == null)
             {
-                _logger.LogWarning("GetApplicantById: applicant not found id={Id}", id);
                 return NotFound(new { message = "Applicant not found" });
             }
 
@@ -90,20 +82,20 @@ namespace Rezk_Proj.Controllers
 
         public record ApplicantUpdateDto(string NationalId, string Name, string PhoneNumber, string LocationString, decimal Latitude, decimal Longitude);
 
-        [HttpPut("{id:int}")]
-        public async Task<IActionResult> UpdateApplicant(int id, [FromBody] ApplicantUpdateDto dto)
+        [HttpPut("UpdateApplicantProfile")]
+        public async Task<IActionResult> UpdateApplicant( [FromBody] ApplicantUpdateDto dto)
         {
-            var existingApplicant = await _context.Applicants.FindAsync(id);
-            if (existingApplicant == null)
-                return NotFound(new { message = "Applicant not found" });
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var applicant = await _context.Applicants.FirstOrDefaultAsync(u => u.UserId == userId);
 
             // update fields
-            existingApplicant.NationalId = dto.NationalId;
-            existingApplicant.Name = dto.Name;
-            existingApplicant.PhoneNumber = dto.PhoneNumber;
-            existingApplicant.LocationString = dto.LocationString;
-            existingApplicant.Latitude = dto.Latitude;
-            existingApplicant.Longitude = dto.Longitude;
+            applicant.NationalId = dto.NationalId;
+            applicant.Name = dto.Name;
+            applicant.PhoneNumber = dto.PhoneNumber;
+            applicant.LocationString = dto.LocationString;
+            applicant.Latitude = dto.Latitude;
+            applicant.Longitude = dto.Longitude;
 
             await _context.SaveChangesAsync();
 
@@ -112,14 +104,13 @@ namespace Rezk_Proj.Controllers
 
 
         // DELETE: api/ApplicantProfile/DeleteApplicant/{id}
-        [HttpDelete("DeleteApplicant/{id}")]
-        public async Task<IActionResult> DeleteApplicant([FromRoute] int id)
+        [HttpDelete("DeleteApplicant")]
+        public async Task<IActionResult> DeleteApplicant()
         {
-            //var applicant = await _context.Applicants
-            //    .FirstOrDefaultAsync(a => a.Id == id);
-            var applicant = await _context.Applicants
-    .Include(a => a.Applications)
-    .FirstOrDefaultAsync(a => a.Id == id);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var applicant = await _context.Applicants.Include(a => a.Applications).FirstOrDefaultAsync(u => u.UserId == userId);
+
+            
 
             if (applicant == null)
                 return NotFound();
