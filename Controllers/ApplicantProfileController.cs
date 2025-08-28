@@ -115,28 +115,25 @@ namespace Rezk_Proj.Controllers
         [HttpDelete("DeleteApplicant/{id}")]
         public async Task<IActionResult> DeleteApplicant([FromRoute] int id)
         {
+            //var applicant = await _context.Applicants
+            //    .FirstOrDefaultAsync(a => a.Id == id);
             var applicant = await _context.Applicants
-                .FirstOrDefaultAsync(a => a.Id == id);
+    .Include(a => a.Applications)
+    .FirstOrDefaultAsync(a => a.Id == id);
 
             if (applicant == null)
-            {
-                return NotFound(new { message = "Applicant not found" });
-            }
+                return NotFound();
 
-            try
-            {
-                _context.Applicants.Remove(applicant);
-                await _context.SaveChangesAsync();
-                return Ok(new { message = "Applicant and related applications deleted successfully" });
-            }
-            catch (DbUpdateException ex)
-            {
-                return StatusCode(500, new
-                {
-                    message = "Delete failed due to database constraint",
-                    details = ex.InnerException?.Message
-                });
-            }
+            if (applicant.Applications.Any())
+                _context.Applications.RemoveRange(applicant.Applications);
+
+            _context.Applicants.Remove(applicant);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Applicant and related applications deleted successfully" });
+
+
+            
         }
 
 
