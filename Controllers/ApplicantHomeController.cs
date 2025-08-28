@@ -12,6 +12,7 @@ namespace Rezk_Proj.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class ApplicantHomeController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
@@ -54,7 +55,7 @@ namespace Rezk_Proj.Controllers
                 j.LocationString,
                 j.MinSalary,
                 j.MaxSalary,
-                j.WorkType,
+                j.WorkTypeId,
                 j.CreatedAt,
                
             });
@@ -63,10 +64,10 @@ namespace Rezk_Proj.Controllers
         }
 
         [HttpGet("NearbyJobs")]
-        public async Task<IActionResult> GetNearbyJobs(decimal applicantLatitude, decimal applicantLongitude)
+        public async Task<IActionResult> GetNearbyJobs( )
         {
-            if (applicantLatitude == 0 || applicantLongitude == 0)
-                return BadRequest("Latitude and Longitude are required");
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var applicant = await _context.Applicants.FirstOrDefaultAsync(u => u.UserId == userId);
 
             //var nearbyjobs = await _context.Jobs
             //    .Where(j => GeoHelper.CalculateDistance(applicantLatitude, applicantLongitude, j.Latitude, j.Longitude) <= 10)
@@ -99,7 +100,7 @@ namespace Rezk_Proj.Controllers
     .ToListAsync();
 
             var nearbyjobs = jobs
-                .Where(j => GeoHelper.CalculateDistance(applicantLatitude, applicantLongitude, j.Latitude, j.Longitude) <= 10)
+                .Where(j => GeoHelper.CalculateDistance(applicant.Latitude, applicant.Longitude, j.Latitude, j.Longitude) <= 10)
                 .ToList();
 
 
@@ -111,7 +112,7 @@ namespace Rezk_Proj.Controllers
         }
 
 
-        [Authorize]
+        
         [HttpPost("ApplyToJob/{jobId}")]
         public async Task<IActionResult> ApplyToJob([FromRoute] int jobId)
         {

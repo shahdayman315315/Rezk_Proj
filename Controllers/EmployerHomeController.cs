@@ -67,6 +67,7 @@ namespace Rezk_Proj.Controllers
         {
            if(!ModelState.IsValid) 
                 return BadRequest(ModelState);
+
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var employer = await _context.Employers.FirstOrDefaultAsync(u => u.UserId == userId);
             // var employer=await _context.Employers.FirstOrDefaultAsync(e=>e.UserId==User.FindFirst("uid").Value);
