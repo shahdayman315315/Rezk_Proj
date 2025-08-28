@@ -30,7 +30,7 @@ namespace Rezk_Proj.Models
                 .HasOne(a => a.Job)
                 .WithMany(j => j.Applications)
                 .HasForeignKey(a => a.JobId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
 
             // ✅ Application -> Applicant (Cascade delete enabled)
             modelbuilder.Entity<Applications>()
@@ -60,7 +60,7 @@ namespace Rezk_Proj.Models
                 .HasOne(e => e.User)
                 .WithOne()
                 .HasForeignKey<Applicant>(e => e.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Restrict);
 
             // Category -> Jobs
             modelbuilder.Entity<Category>()
