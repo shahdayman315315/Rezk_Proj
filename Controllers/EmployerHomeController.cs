@@ -61,7 +61,7 @@ namespace Rezk_Proj.Controllers
             return Ok(result);
         }
 
-        public record JobDto(string Title, string Description, string LocationString, decimal Latitude, decimal Longitude, double MinSalary, double MaxSalary, int WorkTypeId, int CategoryId);
+        public record JobDto(string Title, string Description, string LocationString, decimal Latitude, decimal Longitude, float MinSalary, float MaxSalary, int WorkTypeId, int CategoryId);
         [HttpPost("AddJob")]    
         public async Task<IActionResult> AddJob([FromBody] JobDto job)
         {

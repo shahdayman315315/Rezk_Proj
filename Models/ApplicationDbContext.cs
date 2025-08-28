@@ -59,7 +59,8 @@ namespace Rezk_Proj.Models
             modelbuilder.Entity<Applicant>()
                 .HasOne(e => e.User)
                 .WithOne()
-                .HasForeignKey<Applicant>(e => e.UserId);
+                .HasForeignKey<Applicant>(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             // Category -> Jobs
             modelbuilder.Entity<Category>()
