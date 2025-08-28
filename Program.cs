@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using NuGet.Packaging.Signing;
 using Rezk_Proj.Helpers;
 using Rezk_Proj.Models;
 using Rezk_Proj.Services;
@@ -63,10 +62,11 @@ namespace Rezk_Proj
                     IssuerSigningKey=new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(jwt.Key)),
 
                 };
-            } );
-
-            builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
-            builder.Services.AddTransient<IEmailService, EmailService>();
+            }
+           
+                )
+            
+            ;
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.

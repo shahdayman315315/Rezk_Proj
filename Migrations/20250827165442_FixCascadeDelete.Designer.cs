@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Rezk_Proj.Models;
 
@@ -11,9 +12,11 @@ using Rezk_Proj.Models;
 namespace Rezk_Proj.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250827165442_FixCascadeDelete")]
+    partial class FixCascadeDelete
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -281,14 +284,12 @@ namespace Rezk_Proj.Migrations
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("getdate()");
 
-                    b.Property<int>("StatusId")
+                    b.Property<int>("Status")
                         .HasColumnType("int");
 
                     b.HasKey("JobId", "ApplicantId");
 
                     b.HasIndex("ApplicantId");
-
-                    b.HasIndex("StatusId");
 
                     b.ToTable("Applications");
                 });
@@ -399,19 +400,18 @@ namespace Rezk_Proj.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<float>("MaxSalary")
+                        .HasColumnType("real");
 
-                    b.Property<double>("MaxSalary")
-                        .HasColumnType("float");
-
-                    b.Property<double>("MinSalary")
-                        .HasColumnType("float");
+                    b.Property<float>("MinSalary")
+                        .HasColumnType("real");
 
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<int>("WorkTypeId")
+                    b.Property<int>("WorkType")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -420,51 +420,7 @@ namespace Rezk_Proj.Migrations
 
                     b.HasIndex("EmployerId");
 
-                    b.HasIndex("WorkTypeId");
-
                     b.ToTable("Jobs");
-                });
-
-            modelBuilder.Entity("Rezk_Proj.Models.Status", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("NameAr")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("NameEn")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("StatusTypes");
-                });
-
-            modelBuilder.Entity("Rezk_Proj.Models.WorkType", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("ArabicLabel")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("EnglishLabel")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("WorkTypeLabels");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -535,7 +491,6 @@ namespace Rezk_Proj.Migrations
                         .WithMany("Applications")
                         .HasForeignKey("ApplicantId")
                         .OnDelete(DeleteBehavior.Cascade)
-
                         .IsRequired();
 
                     b.HasOne("Rezk_Proj.Models.Job", "Job")
@@ -544,17 +499,9 @@ namespace Rezk_Proj.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Rezk_Proj.Models.Status", "Status")
-                        .WithMany("Applications")
-                        .HasForeignKey("StatusId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Applicant");
 
                     b.Navigation("Job");
-
-                    b.Navigation("Status");
                 });
 
             modelBuilder.Entity("Rezk_Proj.Models.Employer", b =>
@@ -582,17 +529,9 @@ namespace Rezk_Proj.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Rezk_Proj.Models.WorkType", "WorkType")
-                        .WithMany("Jobs")
-                        .HasForeignKey("WorkTypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Category");
 
                     b.Navigation("Employer");
-
-                    b.Navigation("WorkType");
                 });
 
             modelBuilder.Entity("Rezk_Proj.Models.Applicant", b =>
@@ -613,16 +552,6 @@ namespace Rezk_Proj.Migrations
             modelBuilder.Entity("Rezk_Proj.Models.Job", b =>
                 {
                     b.Navigation("Applications");
-                });
-
-            modelBuilder.Entity("Rezk_Proj.Models.Status", b =>
-                {
-                    b.Navigation("Applications");
-                });
-
-            modelBuilder.Entity("Rezk_Proj.Models.WorkType", b =>
-                {
-                    b.Navigation("Jobs");
                 });
 #pragma warning restore 612, 618
         }

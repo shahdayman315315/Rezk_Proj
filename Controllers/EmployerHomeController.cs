@@ -23,6 +23,7 @@ namespace Rezk_Proj.Controllers
         [HttpGet("Dashboard")]
         public async Task<IActionResult> GetEmployerDashboard()
         {
+
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var employer = await _context.Employers.FirstOrDefaultAsync(u => u.UserId == userId);
             //var employer = await _context.Employers.FirstOrDefaultAsync(e => e.UserId == User.FindFirst("uid").Value);
@@ -31,7 +32,7 @@ namespace Rezk_Proj.Controllers
                 .Include(j => j.Applications)
                 .ThenInclude(a => a.Applicant)
                 .ToListAsync();
-            var result = jobs.Select(j =>new
+            var result = jobs.Select(j => new
             {
                 j.Id,
                 j.Title,
