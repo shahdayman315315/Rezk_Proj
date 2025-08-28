@@ -64,9 +64,8 @@ namespace Rezk_Proj
                 };
             }
            
-                )
-            
-            ;
+                );
+            builder.Services.AddTransient<IEmailService, EmailService>();
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -79,12 +78,13 @@ namespace Rezk_Proj
 
             app.UseHttpsRedirection();
 
+            app.UseCors("AllowFrontend");
+
             app.UseAuthentication();
 
 
             app.UseAuthorization();
 
-            app.UseCors("AllowFrontend");
 
             app.MapControllers();
 
