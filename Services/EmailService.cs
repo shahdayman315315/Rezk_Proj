@@ -1,8 +1,10 @@
 ﻿
 using Microsoft.Extensions.Options;
+using MimeKit;
 using Rezk_Proj.Helpers;
-using System.Net;
-using System.Net.Mail;
+using MailKit.Net.Smtp;
+using MailKit.Security;
+
 
 namespace Rezk_Proj.Services
 {
@@ -14,32 +16,35 @@ namespace Rezk_Proj.Services
             _mailSettings = mailSettings.Value;
         }
 
+
         public async Task SendEmailAsync(string mailTo, string subject, string body)
         {
+            var email = new MimeMessage();
+            email.From.Add(new MailboxAddress(_mailSettings.DisplayName, _mailSettings.From));
+            email.To.Add(MailboxAddress.Parse(mailTo));
+            email.Subject = subject;
 
-            using (var client = new SmtpClient())
+            var builder = new BodyBuilder
             {
-                client.Host = _mailSettings.SmtpServer;   
-                client.Port = _mailSettings.Port;        
-                client.EnableSsl = true;                  
-                client.Credentials = new NetworkCredential(
-                    _mailSettings.Username,
-                    _mailSettings.Password
-                );
+                HtmlBody = body
+            };
+            email.Body = builder.ToMessageBody();
 
-                var mailMessage = new MailMessage()
+            using (var client = new MailKit.Net.Smtp.SmtpClient())
+            {
+                try
                 {
-                    From = new MailAddress(_mailSettings.From, _mailSettings.DisplayName),
-                    Subject = subject,
-                    Body = body,
-                    IsBodyHtml = true 
-                };
-
-                mailMessage.To.Add(mailTo);
-
-                await client.SendMailAsync(mailMessage);
-               
-            
+                    // Use SSL (true) as in your provided logic
+                    await client.ConnectAsync(_mailSettings.SmtpServer, _mailSettings.Port, true);
+                    client.AuthenticationMechanisms.Remove("XOAUTH2");
+                    await client.AuthenticateAsync(_mailSettings.Username, _mailSettings.Password);
+                    await client.SendAsync(email);
+                }
+                finally
+                {
+                    await client.DisconnectAsync(true);
+                    client.Dispose();
+                }
             }
         }
     }

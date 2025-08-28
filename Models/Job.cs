@@ -2,13 +2,7 @@
 
 namespace Rezk_Proj.Models
 {
-    public enum WorkType
-    {
-        FullTime = 1,
-        PartTime = 2,
-        Remote = 3
-    }
-
+    
     public class Job
     {
         public int Id { get; set; }
@@ -39,7 +33,9 @@ namespace Rezk_Proj.Models
         public double MaxSalary { get; set; }
 
 
-        [Required]
+        public int WorkTypeId { get; set; }
+
+
         public WorkType WorkType { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
