@@ -83,5 +83,10 @@ namespace Rezk_Proj.Models
         public DbSet<Job> Jobs { get; set; }
         public DbSet<Applications> Applications { get; set; }
         public DbSet<Category> Categories { get; set; }
+
+
+        public DbSet<Status> StatusTypes { get; set; }
+
+        public DbSet<WorkType> WorkTypeLabels { get; set; }
     }
 }

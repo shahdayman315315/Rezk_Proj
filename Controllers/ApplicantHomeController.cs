@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Rezk_Proj.Helpers;
 using Rezk_Proj.Models;
 using Rezk_Proj.Services;
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace Rezk_Proj.Controllers
 {
@@ -35,17 +37,29 @@ namespace Rezk_Proj.Controllers
         }
 
 
-        [HttpGet("CategoryJobs")]
-        public async Task<IActionResult> GetCategoryJobs([FromRoute] int id)
+        [HttpGet("CategoryJobs/{id}")]
+        public async Task<IActionResult> GetCategoryJobs(int id)
         {
             var category = await _context.Categories
                            .Include(c => c.Jobs)
-                           .FirstOrDefaultAsync(c => c.Id == id);
+                           .FirstOrDefaultAsync(c => c.Id== id);
 
             if (category is null)
                 return NotFound(new { message = "There is no Category with this ID" });
+            var jobs=category.Jobs.Select(j => new
+            {
+                j.Id,
+                j.Title,
+                j.Description,
+                j.LocationString,
+                j.MinSalary,
+                j.MaxSalary,
+                j.WorkType,
+                j.CreatedAt,
+               
+            });
 
-            return Ok(category.Jobs);
+            return Ok(jobs);
         }
 
         [HttpGet("NearbyJobs")]
@@ -54,9 +68,40 @@ namespace Rezk_Proj.Controllers
             if (applicantLatitude == 0 || applicantLongitude == 0)
                 return BadRequest("Latitude and Longitude are required");
 
-            var nearbyjobs = await _context.Jobs
+            //var nearbyjobs = await _context.Jobs
+            //    .Where(j => GeoHelper.CalculateDistance(applicantLatitude, applicantLongitude, j.Latitude, j.Longitude) <= 10)
+            //    .Select(j => new
+            //    {
+            //        j.Id,
+            //        j.Title,
+            //        j.Description,
+            //        j.LocationString,
+            //        j.MinSalary,
+            //        j.MaxSalary,
+            //        j.WorkType,
+            //        j.CreatedAt,
+            //    })
+            //    .ToListAsync();
+            var jobs = await _context.Jobs
+    .Select(j => new
+    {
+        j.Id,
+        j.Title,
+        j.Description,
+        j.LocationString,
+        j.MinSalary,
+        j.MaxSalary,
+        j.WorkType,
+        j.CreatedAt,
+        j.Latitude,
+        j.Longitude
+    })
+    .ToListAsync();
+
+            var nearbyjobs = jobs
                 .Where(j => GeoHelper.CalculateDistance(applicantLatitude, applicantLongitude, j.Latitude, j.Longitude) <= 10)
-                .ToListAsync();
+                .ToList();
+
 
             if (!nearbyjobs.Any())
                 return NotFound("No nearby jobs found within 10 km radius.");
@@ -65,10 +110,17 @@ namespace Rezk_Proj.Controllers
 
         }
 
+
+        [Authorize]
         [HttpPost("ApplyToJob/{jobId}")]
         public async Task<IActionResult> ApplyToJob([FromRoute] int jobId)
         {
-            var applicant = await _context.Applicants.FirstOrDefaultAsync(a => a.UserId == User.FindFirst("uid").Value);
+            var userId= User.FindFirstValue(ClaimTypes.NameIdentifier);
+          var applicant = await _context.Applicants.FirstOrDefaultAsync(u => u.UserId == userId);
+            // var applicant = await _context.Applicants.FirstOrDefaultAsync(a => a.UserId == userId);
+         //   var job = await _context.Jobs.FirstOrDefaultAsync(j => j.Id == jobId);
+        //    var employer = await _context.Employers.FirstOrDefaultAsync(e => e.Id== job.EmployerId);
+
             var job= await _context.Jobs.Include(j=>j.Employer).ThenInclude(e=>e.User).FirstOrDefaultAsync(j => j.Id == jobId);
             if (job is null)
                 return NotFound(new { message = "There is no Job with this ID" });
@@ -78,12 +130,13 @@ namespace Rezk_Proj.Controllers
 
             if (existingApplication is not null)
                 return BadRequest(new { message = "You have already applied to this job" });
+           var status = await _context.StatusTypes.FirstOrDefaultAsync(s => s.Id==(int) Models.Enums.Status.Pending);
 
             await _context.Applications.AddAsync(new Applications
             {
                 Job = job,
                 Applicant = applicant,
-                Status = Status.Pending
+                Status = status
             });
 
             await _context.SaveChangesAsync();
@@ -102,6 +155,7 @@ namespace Rezk_Proj.Controllers
             await _emailService.SendEmailAsync(employerEmail, subject, body);
 
             return Ok(new { message = "Application submitted successfully and notification email sent." });
+        
         
         }
     }

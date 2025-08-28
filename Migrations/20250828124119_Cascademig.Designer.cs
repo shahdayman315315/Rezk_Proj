@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Rezk_Proj.Models;
 
@@ -11,9 +12,11 @@ using Rezk_Proj.Models;
 namespace Rezk_Proj.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250828124119_Cascademig")]
+    partial class Cascademig
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -229,7 +232,6 @@ namespace Rezk_Proj.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<decimal>("Latitude")
-                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("LocationString")
@@ -238,7 +240,6 @@ namespace Rezk_Proj.Migrations
                         .HasColumnType("nvarchar(255)");
 
                     b.Property<decimal>("Longitude")
-                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Name")
@@ -323,7 +324,6 @@ namespace Rezk_Proj.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<decimal>("Latitude")
-                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("LocationString")
@@ -332,7 +332,6 @@ namespace Rezk_Proj.Migrations
                         .HasColumnType("nvarchar(255)");
 
                     b.Property<decimal>("Longitude")
-                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Name")
@@ -387,7 +386,6 @@ namespace Rezk_Proj.Migrations
                         .HasColumnType("int");
 
                     b.Property<decimal>("Latitude")
-                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("LocationString")
@@ -396,9 +394,7 @@ namespace Rezk_Proj.Migrations
                         .HasColumnType("nvarchar(255)");
 
                     b.Property<decimal>("Longitude")
-                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
-
 
                     b.Property<double>("MaxSalary")
                         .HasColumnType("float");
@@ -534,14 +530,13 @@ namespace Rezk_Proj.Migrations
                     b.HasOne("Rezk_Proj.Models.Applicant", "Applicant")
                         .WithMany("Applications")
                         .HasForeignKey("ApplicantId")
-                        .OnDelete(DeleteBehavior.Cascade)
-
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Rezk_Proj.Models.Job", "Job")
                         .WithMany("Applications")
                         .HasForeignKey("JobId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Rezk_Proj.Models.Status", "Status")
