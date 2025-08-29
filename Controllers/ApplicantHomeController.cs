@@ -147,17 +147,27 @@ namespace Rezk_Proj.Controllers
             });
 
             await _context.SaveChangesAsync();
-            string employerEmail = job.Employer.User.Email; 
-            string subject = $"New Application for {job.Title}";
+            string employerEmail = job.Employer.User.Email;
+            //    string subject = $"New Application for {job.Title}";
+            //    string body = $@"
+            //<h2>Hello {job.Employer.Name},</h2>
+            //<p>A new applicant has applied for your job <b>{job.Title}</b>.</p>
+            //<p><b>Applicant Name:</b> {applicant.Name}</p>
+            //<p><b>Applicant Email:</b> {User.FindFirst(JwtRegisteredClaimNames.Email)?.Value}</p>
+            //<p>Status: Pending</p>
+            //<br/>
+            //<p>Regards,<br/>Your Job Portal</p>
+            //   ";
+            string subject = $"طلب تقديم جديد لوظيفة {job.Title}";
             string body = $@"
-        <h2>Hello {job.Employer.Name},</h2>
-        <p>A new applicant has applied for your job <b>{job.Title}</b>.</p>
-        <p><b>Applicant Name:</b> {applicant.Name}</p>
-        <p><b>Applicant Email:</b> {User.FindFirst(JwtRegisteredClaimNames.Email)?.Value}</p>
-        <p>Status: Pending</p>
-        <br/>
-        <p>Regards,<br/>Your Job Portal</p>
-           ";
+<h2>مرحباً {job.Employer.Name},</h2>
+<p>لقد قام متقدم جديد بالتقديم على وظيفتك <b>{job.Title}</b>.</p>
+<p><b>اسم المتقدم:</b> {applicant.Name}</p>
+<p><b>البريد الإلكتروني للمتقدم:</b> {User.FindFirst(JwtRegisteredClaimNames.Email)?.Value}</p>
+<p><b>الحالة:</b> قيد الانتظار</p>
+<br/>
+<p>مع أطيب التحيات،<br/>فريق بوابة التوظيف</p>
+";
 
             await _emailService.SendEmailAsync(employerEmail, subject, body);
 

@@ -155,17 +155,24 @@ namespace Rezk_Proj.Controllers
 
             var status = await _context.StatusTypes
                     .Where(s => s.Id == newStatus)
-                    .Select(s => s.NameEn)
+                    .Select(s => s.NameAr)
                     .FirstOrDefaultAsync();
 
             string applicantEmail = application.Applicant.User.Email;
-            string subject = $"Your application status for {job.Title} has been updated";
+            //    string subject = $"Your application status for {job.Title} has been updated";
+            //    string body = $@"
+            //<h2>Hello {application.Applicant.Name},</h2>
+            //<p>Your application for the job <b>{job.Title}</b> has been {status}.</p>
+            //<br/>
+            //<p>Regards,<br/>Your Job Portal</p>
+            //    ";
+            string subject = $"تم تحديث حالة طلبك لوظيفة {job.Title}";
             string body = $@"
-        <h2>Hello {application.Applicant.Name},</h2>
-        <p>Your application for the job <b>{job.Title}</b> has been {status}.</p>
-        <br/>
-        <p>Regards,<br/>Your Job Portal</p>
-            ";
+<h2>مرحباً {application.Applicant.Name},</h2>
+<p>تم تحديث حالة طلبك للوظيفة <b>{job.Title}</b> إلى: <b>{status}</b>.</p>
+<br/>
+<p>مع أطيب التحيات،<br/>فريق بوابة التوظيف</p>
+";
 
             await _emailService.SendEmailAsync(applicantEmail, subject, body);
 
