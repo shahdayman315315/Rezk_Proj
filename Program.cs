@@ -6,6 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using Rezk_Proj.Helpers;
 using Rezk_Proj.Models;
 using Rezk_Proj.Services;
+using System.Configuration;
 
 namespace Rezk_Proj
 {
@@ -65,6 +66,8 @@ namespace Rezk_Proj
             }
            
                 );
+            builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
+
             builder.Services.AddTransient<IEmailService, EmailService>();
             var app = builder.Build();
 

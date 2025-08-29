@@ -102,7 +102,12 @@ namespace Rezk_Proj.Controllers
             var nearbyjobs = jobs
                 .Where(j => GeoHelper.CalculateDistance(applicant.Latitude, applicant.Longitude, j.Latitude, j.Longitude) <= 10)
                 .ToList();
-            
+            Console.WriteLine(GeoHelper.CalculateDistance(30.69m, 30.31m, 30.70m, 30.36m));
+            Console.WriteLine(GeoHelper.CalculateDistance(30.69m, 30.31m, 30.65m, 30.28m));
+            Console.WriteLine(GeoHelper.CalculateDistance(30.69m, 30.31m, 30.73m, 30.34m));
+            Console.WriteLine(GeoHelper.CalculateDistance(30.69m, 30.31m, 30.68m, 30.29m));
+            Console.WriteLine(GeoHelper.CalculateDistance(30.69m, 30.31m, 30.72m, 30.30m));
+
 
 
             if (!nearbyjobs.Any())
@@ -160,5 +165,27 @@ namespace Rezk_Proj.Controllers
         
         
         }
+
+        [HttpDelete("RemoveApplication/{jobId}")]
+        public async Task<IActionResult> RemoveApplication([FromRoute] int jobId)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var applicant = await _context.Applicants.FirstOrDefaultAsync(u => u.UserId == userId);
+
+            if (applicant is null)
+                return NotFound(new { message = "Applicant not found" });
+
+            var application = await _context.Applications
+                .FirstOrDefaultAsync(a => a.JobId == jobId && a.ApplicantId == applicant.Id);
+
+            if (application is null)
+                return NotFound(new { message = "No application found for this job" });
+
+            _context.Applications.Remove(application);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Application removed successfully" });
+        }
+
     }
 }
