@@ -166,13 +166,34 @@ namespace Rezk_Proj.Controllers
             //<br/>
             //<p>Regards,<br/>Your Job Portal</p>
             //    ";
+            //            string subject = $"تم تحديث حالة طلبك لوظيفة {job.Title}";
+            //            string body = $@"
+            //<h2>مرحباً {application.Applicant.Name},</h2>
+            //<p>تم تحديث حالة طلبك للوظيفة <b>{job.Title}</b> إلى: <b>{status}</b>.</p>
+            //<br/>
+            //<p>مع أطيب التحيات،<br/>فريق بوابة التوظيف</p>
+            //";
             string subject = $"تم تحديث حالة طلبك لوظيفة {job.Title}";
             string body = $@"
-<h2>مرحباً {application.Applicant.Name},</h2>
-<p>تم تحديث حالة طلبك للوظيفة <b>{job.Title}</b> إلى: <b>{status}</b>.</p>
-<br/>
-<p>مع أطيب التحيات،<br/>فريق بوابة التوظيف</p>
+<div style='font-family: Arial, sans-serif; line-height:1.8; color:#333;'>
+  <h2 style='color:#2c3e50; margin-bottom:20px;'>مرحباً {application.Applicant.Name},</h2>
+  
+  <p style='font-size:16px; margin-bottom:20px;'>
+    تم تحديث حالة طلبك للوظيفة 
+    <b style='color:#2980b9;'>{job.Title}</b> 
+    إلى: 
+    <b style='color:#27ae60;'>{status}</b>.
+  </p>
+  
+  <br/>
+  
+  <p style='font-size:14px; color:#555; margin-top:30px;'>
+    مع أطيب التحيات،<br/>
+    <span style='color:#27ae60; font-weight:bold;'>فريق بوابة التوظيف</span>
+  </p>
+</div>
 ";
+
 
             await _emailService.SendEmailAsync(applicantEmail, subject, body);
 

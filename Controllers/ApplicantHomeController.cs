@@ -158,16 +158,36 @@ namespace Rezk_Proj.Controllers
             //<br/>
             //<p>Regards,<br/>Your Job Portal</p>
             //   ";
+            //            string subject = $"طلب تقديم جديد لوظيفة {job.Title}";
+            //            string body = $@"
+            //<h2>مرحباً {job.Employer.Name},</h2>
+            //<p>لقد قام متقدم جديد بالتقديم على وظيفتك <b>{job.Title}</b>.</p>
+            //<p><b>اسم المتقدم:</b> {applicant.Name}</p>
+            //<p><b>البريد الإلكتروني للمتقدم:</b> {User.FindFirst(JwtRegisteredClaimNames.Email)?.Value}</p>
+            //<p><b>الحالة:</b> قيد الانتظار</p>
+            //<br/>
+            //<p>مع أطيب التحيات،<br/>فريق بوابة التوظيف</p>
             string subject = $"طلب تقديم جديد لوظيفة {job.Title}";
             string body = $@"
-<h2>مرحباً {job.Employer.Name},</h2>
-<p>لقد قام متقدم جديد بالتقديم على وظيفتك <b>{job.Title}</b>.</p>
-<p><b>اسم المتقدم:</b> {applicant.Name}</p>
-<p><b>البريد الإلكتروني للمتقدم:</b> {User.FindFirst(JwtRegisteredClaimNames.Email)?.Value}</p>
-<p><b>الحالة:</b> قيد الانتظار</p>
-<br/>
-<p>مع أطيب التحيات،<br/>فريق بوابة التوظيف</p>
+<div style='font-family: Arial, sans-serif; line-height: 1.8; color: #333;'>
+  <h2 style='color: #2c3e50;'>مرحباً {job.Employer.Name},</h2>
+  
+  <p style='font-size: 16px;'>لقد قام متقدم جديد بالتقديم على وظيفتك:</p>
+  <p style='background-color:#f8f9fa; padding:10px; border-left:4px solid #3498db;'>
+    <b>الوظيفة:</b> {job.Title}
+  </p>
+  
+  <p style='margin-top:20px; font-size:16px;'><b style='color:#16a085;'>اسم المتقدم:</b> {applicant.Name}</p>
+  <p style='font-size:16px;'><b style='color:#2980b9;'>البريد الإلكتروني للمتقدم:</b> {User.FindFirst(JwtRegisteredClaimNames.Email)?.Value}</p>
+  <p style='font-size:16px;'><b style='color:#e67e22;'>الحالة:</b> <span style='color:#d35400;'>قيد الانتظار</span></p>
+  
+  <hr style='margin:30px 0; border:none; border-top:1px solid #ccc;'/>
+  
+  <p style='font-size:14px; color:#555;'>مع أطيب التحيات،<br/>
+  <span style='color:#27ae60; font-weight:bold;'>فريق بوابة التوظيف</span></p>
+</div>
 ";
+            //";
 
             await _emailService.SendEmailAsync(employerEmail, subject, body);
 
