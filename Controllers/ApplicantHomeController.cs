@@ -102,6 +102,7 @@ namespace Rezk_Proj.Controllers
             var nearbyjobs = jobs
                 .Where(j => GeoHelper.CalculateDistance(applicant.Latitude, applicant.Longitude, j.Latitude, j.Longitude) <= 10)
                 .ToList();
+            
 
 
             if (!nearbyjobs.Any())
